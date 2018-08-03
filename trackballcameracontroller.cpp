@@ -24,8 +24,9 @@ TrackballCameraController::TrackballCameraController(Qt3DCore::QNode *parent)
         //qDebug()<<"mouse pressed at: x:"<<pressedEvent->x() <<"y:"<<pressedEvent->y();
         //qDebug()<<"window size: width:"<<m_windowSize.width()<<"height:"<<m_windowSize.height();
         pressedEvent->setAccepted(true);
-        this->m_mouseLastPosition = QPoint(pressedEvent->x(),
+        m_mouseLastPosition = QPoint(pressedEvent->x(),
                                            pressedEvent->y());
+        //projectToTrackball(m_mouseLastPosition);
     });
 
     QObject::connect(mouseHandler, &Qt3DInput::QMouseHandler::released,
@@ -33,7 +34,7 @@ TrackballCameraController::TrackballCameraController(Qt3DCore::QNode *parent)
         //qDebug()<<"mouse pressed at: x:"<<pressedEvent->x() <<"y:"<<pressedEvent->y();
         //qDebug()<<"window size: width:"<<m_windowSize.width()<<"height:"<<m_windowSize.height();
         releasedEvent->setAccepted(true);
-        this->m_mouseLastPosition = QPoint(releasedEvent->x(),
+        m_mouseLastPosition = QPoint(releasedEvent->x(),
                                            releasedEvent->y());
     });
 
@@ -46,52 +47,39 @@ TrackballCameraController::TrackballCameraController(Qt3DCore::QNode *parent)
     });
 }
 
-QVector3D TrackballCameraController::projectScreenToTrackball(const QPoint &screenCoords,
-                                                              const QSize &windowSize,
-                                                              float trackballRadius) const
+QVector3D TrackballCameraController::projectToTrackball(const QPoint &screenCoords) const
 {
-    QVector2D p2D(2.0 * camera()->aspectRatio()*((float)screenCoords.x()/(float)windowSize.width() - 0.5),
-                  -2.0*((float)screenCoords.y()/(float)windowSize.height() - 0.5));
+    float sx = screenCoords.x(), sy = screenCoords.y();
 
-    //QVector2D p2D((float)screenCoords.x()/(float)windowSize.width(), (float)screenCoords.y()/(float)windowSize.height());
-    qDebug() << p2D;
+    QVector2D p2d(sx / m_windowSize.width() - 0.5f, sy / m_windowSize.height() - 0.5f);
+    //qDebug()<<p2d;
 
-    QVector3D p3D(p2D, 0);
-
-    float r = trackballRadius;
-    float z0 = r * 0.5f;
-
-    float z = 0;
-    // If point over trackball, compute Z for the sphere
-    if (r*r - p3D.lengthSquared() >= z0*z0) {
-        z = sqrt(r*r - p3D.lengthSquared());
+    float z = 0.0f;
+    float r2 = m_trackballSize * m_trackballSize;
+    if (p2d.lengthSquared() <= r2 / 2){
+        z = sqrt(r2 - p2d.lengthSquared());
+    }else{
+        z = r2 / 2 / p2d.length();
     }
-    // Else, compute Z for an hyperbole
-    else {
-        z = z0*std::sqrt(r*r - z0*z0) / p3D.length();
-    }
-
-    p3D[2] = z;
-    return p3D;
+    QVector3D p3d(p2d, z);
+    //qDebug()<<p3d;
+    return p3d;
 }
 
 QQuaternion TrackballCameraController::createRotation(const QPoint &firstPoint,
-                                                              const QPoint &nextPoint,
-                                                              const QSize &windowSize,
-                                                              float trackBallRadius) const
+                                                              const QPoint &nextPoint) const
 {
-    QVector3D lastPos3D = projectScreenToTrackball(firstPoint, windowSize, trackBallRadius);
-    QVector3D currentPos3D = projectScreenToTrackball(nextPoint, windowSize, trackBallRadius);
-
-    QVector3D posAvg = (lastPos3D + currentPos3D) / 2;
+    QVector3D lastPos3D = projectToTrackball(firstPoint).normalized();
+    QVector3D currentPos3D = projectToTrackball(nextPoint).normalized();
 
     // Compute axis of rotation:
-    QVector3D dir = QVector3D::crossProduct(currentPos3D,lastPos3D);
+    QVector3D dir = QVector3D::crossProduct(currentPos3D, lastPos3D).normalized();
 
     // Approximate rotation angle:
-    float t = dir.length()/posAvg.length();
+    float t = acos(QVector3D::dotProduct(currentPos3D, lastPos3D));
 
     QQuaternion q = QQuaternion::fromAxisAndAngle(dir, t);
+    qDebug()<<"dir:"<<dir<<"angle:"<<t;
     return q;
 }
 
@@ -103,19 +91,16 @@ void TrackballCameraController::moveCamera(const Qt3DExtras::QAbstractCameraCont
         return;
 
     if(state.leftMouseButtonActive){
-        QQuaternion rotation = createRotation(m_mouseLastPosition,
-                                              m_mouseCurrentPosition,
-                                              m_windowSize,
-                                              m_trackballRadius);
+        QQuaternion rotation = createRotation(m_mouseLastPosition, m_mouseCurrentPosition);
 
-        QQuaternion currentRotation = theCamera->transform()->rotation();
-        QQuaternion currentRotationInversed = currentRotation.conjugated();
+//        QQuaternion currentRotation = theCamera->transform()->rotation();
+//        QQuaternion currentRotationInversed = currentRotation.conjugated();
 
-        QVector3D rotatedAxis = currentRotationInversed.rotatedVector(rotation.vector());
-        float angle = m_rotationSpeed*rotation.scalar();
+//        QVector3D rotatedAxis = currentRotationInversed.rotatedVector(rotation.vector());
+//        float angle = m_rotationSpeed*rotation.scalar();
 
-        theCamera->rotateAboutViewCenter(QQuaternion::fromAxisAndAngle(rotatedAxis,
-                                                                      angle));
+//        theCamera->rotateAboutViewCenter(QQuaternion::fromAxisAndAngle(rotatedAxis, angle));
+        theCamera->rotateAboutViewCenter(rotation);
         m_mouseLastPosition = m_mouseCurrentPosition;
     }
 }
