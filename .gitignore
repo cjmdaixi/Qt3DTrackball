@@ -1,0 +1,24 @@
+# User-specific files
+*.suo
+*.user
+*.sln.docstates
+build_*
+build
+
+3rd/windows
+3rd/macos
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Mac crap
+.DS_Store
+
+
