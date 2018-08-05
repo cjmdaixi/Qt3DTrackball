@@ -4,6 +4,7 @@
 #include <Qt3DExtras/QAbstractCameraController>
 #include <QPoint>
 #include <QSize>
+#include <Qt3DCore/QTransform>
 
 class TrackballCameraController : public Qt3DExtras::QAbstractCameraController
 {
@@ -11,6 +12,7 @@ class TrackballCameraController : public Qt3DExtras::QAbstractCameraController
 public:
     Q_PROPERTY(QSize windowSize READ windowSize WRITE setWindowSize NOTIFY windowSizeChanged)
     Q_PROPERTY(float trackballSize READ trackballSize WRITE setTrackballSize NOTIFY trackballSizeChanged)
+    Q_PROPERTY(float rotationSpeed READ rotationSpeed WRITE setRotationSpeed NOTIFY rotationSpeedChanged)
 
     TrackballCameraController(Qt3DCore::QNode *parent = nullptr);
 
@@ -22,6 +24,11 @@ public:
     float trackballSize() const
     {
         return m_trackballSize;
+    }
+
+    float rotationSpeed() const
+    {
+        return m_rotationSpeed;
     }
 
 public slots:
@@ -43,16 +50,27 @@ public slots:
         emit trackballSizeChanged(m_trackballSize);
     }
 
+    void setRotationSpeed(float rotationSpeed)
+    {
+        if (qFuzzyCompare(m_rotationSpeed, rotationSpeed))
+            return;
+
+        m_rotationSpeed = rotationSpeed;
+        emit rotationSpeedChanged(m_rotationSpeed);
+    }
+
 signals:
     void windowSizeChanged(QSize windowSize);
 
     void trackballSizeChanged(float trackballSize);
 
+    void rotationSpeedChanged(float rotationSpeed);
+
 protected:
     void moveCamera(const Qt3DExtras::QAbstractCameraController::InputState &state, float dt) override;
     QVector3D projectToTrackball(const QPoint &screenCoords) const;
-    QQuaternion createRotation(const QPoint &firstPoint,
-                               const QPoint &nextPoint) const;
+    void createRotation(const QPoint &firstPoint,
+                               const QPoint &nextPoint, QVector3D &dir, float &angle);
 
 private:
     QPoint m_mouseLastPosition, m_mouseCurrentPosition;
@@ -63,7 +81,7 @@ private:
     float m_zoomSpeed = 1.0f;
     float m_rotationSpeed = 1.0f;
     float m_zoomCameraLimit = 1.0f;
-    float m_trackballSize = 0.7f;
+    float m_trackballSize = 1.0f;
 };
 
 #endif // TRACKBALLCAMERACONTROLLER_H

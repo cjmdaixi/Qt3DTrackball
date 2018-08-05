@@ -24,6 +24,7 @@ Entity{
     TrackballCameraController{
         camera: camera
         windowSize: Qt.size(window.width, window.height)
+        rotationSpeed: 2.0
     }
 
     components: [
