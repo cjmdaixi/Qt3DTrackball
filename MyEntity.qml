@@ -40,12 +40,18 @@ Entity{
         id: material
     }
 
-    TorusMesh {
-        id: torusMesh
-        radius: 5
-        minorRadius: 1
-        rings: 100
-        slices: 20
+//    TorusMesh {
+//        id: torusMesh
+//        radius: 5
+//        minorRadius: 1
+//        rings: 100
+//        slices: 20
+//    }
+    CuboidMesh{
+        id: cuboidMesh
+        xExtent: 10
+        yExtent: 10
+        zExtent: 10
     }
 
     Transform {
@@ -56,6 +62,6 @@ Entity{
 
     Entity {
         id: torusEntity
-        components: [ torusMesh, material, torusTransform ]
+        components: [ cuboidMesh, material, torusTransform ]
     }
 }
