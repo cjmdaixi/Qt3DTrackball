@@ -96,9 +96,8 @@ void TrackballCameraController::moveCamera(const Qt3DExtras::QAbstractCameraCont
         createRotation(m_mouseLastPosition, m_mouseCurrentPosition, dir, angle);
 
         auto currentRotation = theCamera->transform()->rotation();
-        auto currentRotationInversed = currentRotation;
 
-        auto rotatedAxis = currentRotationInversed.rotatedVector(dir);
+        auto rotatedAxis = currentRotation.rotatedVector(dir);
         angle *= m_rotationSpeed;
 
         theCamera->rotateAboutViewCenter(QQuaternion::fromAxisAndAngle(rotatedAxis, angle * M_1_PI * 180));
