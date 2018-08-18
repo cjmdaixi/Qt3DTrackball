@@ -15,7 +15,6 @@
 TrackballCameraController::TrackballCameraController(Qt3DCore::QNode *parent)
     : Qt3DExtras::QAbstractCameraController (parent)
 {
-    //// Mouse handler
     Qt3DInput::QMouseHandler *mouseHandler = new Qt3DInput::QMouseHandler(this);
     mouseHandler->setSourceDevice(mouseDevice());
 
@@ -61,8 +60,8 @@ float clamp(float x)
 void TrackballCameraController::createRotation(const QPoint &firstPoint, const QPoint &nextPoint,
                                                QVector3D &dir, float &angle)
 {
-    QVector3D lastPos3D = projectToTrackball(firstPoint).normalized();
-    QVector3D currentPos3D = projectToTrackball(nextPoint).normalized();
+    auto lastPos3D = projectToTrackball(firstPoint).normalized();
+    auto currentPos3D = projectToTrackball(nextPoint).normalized();
 
     // Compute axis of rotation:
     dir = QVector3D::crossProduct(currentPos3D, lastPos3D);

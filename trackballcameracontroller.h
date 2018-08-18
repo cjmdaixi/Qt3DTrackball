@@ -61,9 +61,7 @@ public slots:
 
 signals:
     void windowSizeChanged(QSize windowSize);
-
     void trackballSizeChanged(float trackballSize);
-
     void rotationSpeedChanged(float rotationSpeed);
 
 protected:
@@ -76,7 +74,6 @@ private:
     QPoint m_mouseLastPosition, m_mouseCurrentPosition;
     QSize m_windowSize;
     float m_trackballRadius = 1.0f;
-    //Movement speed control
     float m_panSpeed = 1.0f;
     float m_zoomSpeed = 1.0f;
     float m_rotationSpeed = 1.0f;
