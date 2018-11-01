@@ -31,6 +31,7 @@ TrackballCameraController::TrackballCameraController(Qt3DCore::QNode *parent)
         m_mouseCurrentPosition = QPoint(positionChangedEvent->x(),
                                               positionChangedEvent->y());
     });
+    //keyboardDevice()->set
 }
 
 QVector3D TrackballCameraController::projectToTrackball(const QPoint &screenCoords) const
@@ -81,15 +82,9 @@ void TrackballCameraController::moveCamera(const Qt3DExtras::QAbstractCameraCont
         return;
 
     auto ls = linearSpeed();
-    theCamera->translate(QVector3D(state.txAxisValue * ls,
-                                  state.tyAxisValue * ls,
-                                  state.tzAxisValue * ls) * dt,
-                         Qt3DRender::QCamera::DontTranslateViewCenter);
+
 
     if(state.leftMouseButtonActive){
-
-//                theCamera->tiltAboutViewCenter(-state.ryAxisValue * 5);
-//                theCamera->panAboutViewCenter(-state.rxAxisValue * 5);
         QVector3D dir;
         float angle;
         createRotation(m_mouseLastPosition, m_mouseCurrentPosition, dir, angle);
@@ -100,6 +95,20 @@ void TrackballCameraController::moveCamera(const Qt3DExtras::QAbstractCameraCont
         angle *= m_rotationSpeed;
 
         theCamera->rotateAboutViewCenter(QQuaternion::fromAxisAndAngle(rotatedAxis, angle * M_1_PI * 180));
-        m_mouseLastPosition = m_mouseCurrentPosition;
+    }else if(state.middleMouseButtonActive){
+        auto offset = m_mouseCurrentPosition - m_mouseLastPosition;
+        qDebug()<<"offset:"<<offset;
+        theCamera->translate(QVector3D(-offset.x() / float(m_windowSize.width()) * ls,
+                                      offset.y() / float(m_windowSize.height()) * ls,
+                                      0));
+
+
+    }else if(dt != 0){
+        qDebug()<<"dt:"<<dt;
+        theCamera->translate(QVector3D(state.txAxisValue * ls,
+                                      state.tyAxisValue * ls,
+                                      state.tzAxisValue * ls) * dt,
+                             Qt3DRender::QCamera::DontTranslateViewCenter);
     }
+    m_mouseLastPosition = m_mouseCurrentPosition;
 }

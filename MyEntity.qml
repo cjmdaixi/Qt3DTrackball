@@ -9,6 +9,7 @@ import QtQuick.Window 2.11
 
 Entity{
     id: root
+    property alias camera: camera
 
     Camera {
         id: camera

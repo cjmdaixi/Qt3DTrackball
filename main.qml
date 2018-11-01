@@ -1,6 +1,7 @@
 import QtQuick 2.11
 import QtQuick.Window 2.11
 import QtQuick.Scene3D 2.0
+import QtQuick.Controls 2.4
 
 Window {
     id: window
@@ -16,7 +17,21 @@ Window {
         aspects: ["input", "logic"]
         cameraAspectRatioMode: Scene3D.AutomaticAspectRatio
 
-        MyEntity{}
+        MyEntity{
+            id: rootEntity
+        }
 
+    }
+
+    Button{
+        anchors{
+            right: parent.right;
+            bottom: parent.bottom;
+            margins: 10
+        }
+        text: "Home"
+        onClicked: {
+            rootEntity.camera.viewAll();
+        }
     }
 }
